@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>區塊鏈記事本</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <h1>區塊鏈記事本</h1>
+    <form id="noteForm">
+        <input type="text" id="content" placeholder="輸入記事內容" required>
+        <button type="submit">新增記事</button>
+    </form>
+    <h2>所有記事</h2>
+    <ul id="notesList"></ul>
+
+    <script>
+        async function loadNotes() {
+            const res = await fetch('/notes');
+            const notes = await res.json();
+            const list = document.getElementById('notesList');
+            list.innerHTML = '';
+            notes.forEach(note => {
+                const li = document.createElement('li');
+                const date = new Date(note.timestamp * 1000).toLocaleString();
+                li.textContent = `[${note.id}] ${note.content} (時間: ${date})`;
+                list.appendChild(li);
+            });
+        }
+
+        document.getElementById('noteForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const content = document.getElementById('content').value;
+            const res = await fetch('/notes', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({content})
+            });
+            const data = await res.json();
+            alert('已上鏈，交易哈希: ' + data.tx_hash);
+            document.getElementById('content').value = '';
+            loadNotes();
+        });
+
+        loadNotes();
+    </script>
+</body>
+</html>
